@@ -12,7 +12,17 @@ main PROC
 	
 	; initialize the snake
 	call initSnake
-	
+
+	; recommended next steps
+	; initialize the snake moving 1 pixel per second to the right
+
+	; add bounds so the snake dies if it touches the wall
+
+	; then add user input with arrow keys or WASD
+
+	; then add the random apple spawner
+
+	; then add the apple eating logic (which in turn makes the snake faster)
 
 
 	exit
