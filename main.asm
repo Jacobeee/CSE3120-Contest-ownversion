@@ -14,6 +14,9 @@ main PROC
 	call initSnake
 
 	; recommended next steps
+
+	; initialize the bounds of the map
+
 	; initialize the snake moving 1 pixel per second to the right
 
 	; add bounds so the snake dies if it touches the wall
