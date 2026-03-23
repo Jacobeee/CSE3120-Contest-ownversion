@@ -19,8 +19,6 @@ main PROC
 
 	; recommended next steps
 
-	; initialize the bounds of the map
-
 	; initialize the snake moving 1 pixel per second to the right
 
 	; add bounds so the snake dies if it touches the wall
@@ -111,6 +109,39 @@ RightBar:
 	inc bl
 	dec ecx
 	jnz RightBar
+
+	; iterate across the columns (120 of them)
+	mov ecx, 119
+	mov bl, 119
+BottomBar:
+	; move cursor to row 30 col 120, then move left
+	mov dh, 28
+	mov dl, bl
+	call GotoXY
+	; write the string space
+	mov al, blank
+	call WriteChar
+
+	dec bl
+	dec ecx
+	jnz BottomBar
+
+	; iterate across the rows (30 of them)
+	mov ecx, 28
+	mov bl, 28
+LeftBar:
+	; move cursor to row 30 col 1, then go up
+	mov dh, bl
+	mov dl, 1
+	call GotoXY
+	; write the string space
+	mov al, blank
+	call WriteChar
+
+	dec bl
+	dec ecx
+	jnz LeftBar
+
 
 	; move cursor to row 15 col 61
 	;mov dh, 15
