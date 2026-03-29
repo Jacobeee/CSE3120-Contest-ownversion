@@ -27,20 +27,26 @@ main PROC
 	call initMap
 
 	; initialize the snake moving 1 pixel per second to the right
-	mov timeDelay, 1000		; time delay in milliseconds
+	mov timeDelay, 1000		; initial time delay in milliseconds
 	call moveSnake
 
 	; recommended next steps
 
-
-
-	; add bounds so the snake dies if it touches the wall
-
-	; then add user input with arrow keys or WASD
-
-	; then add the random apple spawner
+	; then add the random apple spawner (within map bounds and not on snake)
 
 	; then add the apple eating logic (which in turn makes the snake faster)
+	; - update timeDelay variable to be half of what it was before
+
+	; some bugs/more changes to eventually fix:
+	; snake eyes only update instead of whole body
+	; - im thinking to just keep the snake size 3 parts long the whole time
+	; no matter how many apples are eaten
+	; - old snake part deletion can be added by setting a character to a " " 
+	; wall bounds that are 1 pixel off
+	; could make smaller map to a square grid to make the game go by faster
+	; input delay can be fixed by adding more of the handle input calls 
+	;  elsewhere (such as in the delay section)
+
 
 
 	exit
@@ -173,20 +179,9 @@ initMap ENDP
 ; edx holds time difference between eax and ebx
 moveSnake PROC
 	; retrieve the current seconds (ch 10)
-	INVOKE GetLocalTime, ADDR sysTime
-	movzx eax, sysTime.wMilliseconds
-	mov ebx, eax
-	; get that next second
-
-	;push eax
-	; do modulus to get the next second
-	;mov eax, ebx
-	;add eax, timeDelay	; move one second into future
-	;mov ebx, 1000
-	;div ebx			; leaves quotient in eax, remainder in edx
-	;pop eax
-
-	;call WriteDec
+	;INVOKE GetLocalTime, ADDR sysTime
+	;movzx eax, sysTime.wMilliseconds
+	;mov ebx, eax
 
 
 	; while statement for 1 second delay
@@ -197,7 +192,7 @@ go:
 	movzx eax, sysTime.wMilliseconds
 	;call WriteDec
 delayLoop:
-	; code to make a 1 second delay (1000 ms)
+	; code to make a delay (ms)
 	push eax
 	INVOKE GetLocalTime, ADDR sysTime
 	movzx eax, sysTime.wMilliseconds
@@ -255,12 +250,6 @@ notelse:
 
 	; if not time yet (eax < ebx), continue delay
 	jmp delayLoop
-
-
-	
-	;add eax, timeDelay	; move one second into future
-	;mov ebx, 1000
-	;div ebx			; leaves quotient in eax, remainder in edx
 
 	; if a second has passed end the delay
 	jz enddelay
@@ -336,6 +325,7 @@ debug PROC
 debug ENDP
 
 ; returns negative number in ecx if out of bounds
+; bounds so the snake dies if it touches the wall
 checkBounds PROC
 .data
 deathMsg BYTE "You have died!", 0
@@ -361,6 +351,7 @@ quit:
 	ret
 checkBounds ENDP
 
+; user input with WASD
 handleInput PROC
 	call readKey ; ch 5
 	; if zero flag is zero
