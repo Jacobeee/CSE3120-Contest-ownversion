@@ -7,13 +7,22 @@ INCLUDE Irvine32.inc
 .data 
 	x BYTE "O",0
 	eyes BYTE ":",0
-	blank BYTE " ", 0
+	blank BYTE " ",0
 	snakePOS WORD 0h
 	sysTime SYSTEMTIME <>
 	currCOL BYTE 0h
 	timeDelay DWORD 0h
 	timePassed DWORD 0h
 	direction WORD 90
+
+	applesEaten DWORD 0
+	snakeCols BYTE 62,61,60
+	snakeRows BYTE 15,15,15
+	appleCol BYTE 0
+	appleRow BYTE 0
+	tailCol BYTE 0
+	TailRow BYTE 0
+	deathMsg BYTE "GAME OVER",0
 .code
 main PROC
 	
@@ -26,6 +35,9 @@ main PROC
 	; 0 < row <= 28
 	call initMap
 
+	; initialize random generator for the production of the first apple
+	call Randomize
+	call spawnApple
 	; initialize the snake moving 1 pixel per second to the right
 	mov timeDelay, 1000		; initial time delay in milliseconds
 	call moveSnake
