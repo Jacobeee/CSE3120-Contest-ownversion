@@ -9,10 +9,8 @@ INCLUDE Irvine32.inc
 	eyes BYTE ":",0
 	blank BYTE " ",0
 	snakePOS WORD 0h
-	sysTime SYSTEMTIME <>
-	currCOL BYTE 0h
 	timeDelay DWORD 0h
-	timePassed DWORD 0h
+	trickStart DWORD 0
 	direction WORD 90
 
 	applesEaten DWORD 0
