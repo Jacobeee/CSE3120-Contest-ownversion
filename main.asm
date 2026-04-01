@@ -274,138 +274,114 @@ initMap ENDP
 ; ebx holds current time since delay started
 ; edx holds time difference between eax and ebx
 moveSnake PROC
-	; retrieve the current seconds (ch 10)
-	;INVOKE GetLocalTime, ADDR sysTime
-	;movzx eax, sysTime.wMilliseconds
-	;mov ebx, eax
+gameLoop:
+	; this will check the TimeDelay that we have set
+	; it will also check for the inputs at the start of the game
+	call GetTickCount
+	mov tickStart, eax
 
-
-	; while statement for 1 second delay
-	mov ecx, 0
-go:
+waitLoop:
 	call handleInput
-	INVOKE GetLocalTime, ADDR sysTime
-	movzx eax, sysTime.wMilliseconds
-	;call WriteDec
-delayLoop:
-	; code to make a delay (ms)
-	push eax
-	INVOKE GetLocalTime, ADDR sysTime
-	movzx eax, sysTime.wMilliseconds
-	mov ebx, eax
-	pop eax
-	; check if a second has passed
-	; if eax is smaller than or equal to ebx, do normal difference
-	; ebx - eax = diff
-	cmp eax, ebx
-	jg elsestatement
+	INVOKE Sleep, 20
+	call GetTickCount
+	sub eax, tickStart
+	cmp eax, timeDelay
+	jb waitLoop
 
-	push eax
-	push ebx
-	sub ebx, eax
-	mov edx, ebx
-	pop ebx
-	pop eax
+	; saves the position of the old tail
+	mov al, snakeCols[2]
+	mov tailCol, al
+	mov al, snakeRows[2]
+	mov tailRow, al
 
-	jmp notelse
-elsestatement:
-	; if eax is bigger, do weird difference
-	; (1000 - eax) + (ebx) = diff
-	push eax
-	mov ecx, 1000
-	sub ecx, eax
-	mov eax, ecx
-	add eax, ebx
-	mov edx, eax
-	pop eax
-	
-notelse:
+	; this will start from the current head and will clear EDX
+	xor edx, edx         
+	mov dl, snakeCols[0]
+	mov dh, snakeRows[0]
 
-	; check if a second has passed
-	push eax
-	push ebx
-	mov eax, timePassed
-	mov ebx, timeDelay
-	; add the current time passed to the timePassed variable
-	add eax, edx
-	cmp eax, ebx
-
-	; update timePassed variable
-	mov timePassed, eax
-	;call WriteDec
-	;call debug
-
-	pop ebx
-	pop eax
-
-	; update ebx time to eax time
-	mov eax, ebx
-
-	; if enough time passed (eax >= ebx), end delay 
-	jge enddelay
-
-	; if not time yet (eax < ebx), continue delay
-	jmp delayLoop
-
-	; if a second has passed end the delay
-	jz enddelay
-	; if not, wait again
-	jmp go
-
-enddelay:
-	; update timePassed back to 0
-	mov timePassed, 0h
-
-	; code to move snake
-	mov dx, snakePOS
-
-	push ax
-	; if direction is right
+	; gets the next position 
 	mov ax, direction
 	cmp ax, 90
-	jnz next
-	inc dl		;row stays the same, but change col
-	jmp enddir
-next:
-	; if direction is down
+	jne checkDown
+	inc dl
+	jmp headReady
+
+checkDown:
 	cmp ax, 180
-	jnz next2
-	inc dh		;row changes, but col stays the same
-	jmp enddir
-next2:
-	; if direction is left
+	jne checkLeft
+	inc dh
+	jmp headReady
+
+checkLeft:
 	cmp ax, 270
-	jnz next3
-	dec dl		;row stays the same, but change col
-	jmp enddir
-next3:
-	; if direction is up
-	cmp ax, 0
-	jnz enddir
-	dec dh		;row changes, but col stays the same
-enddir:
-	call GotoXY
-	pop ax
+	jne checkUp
+	dec dl
+	jmp headReady
 
+checkUp:
+	dec dh
 
-	; check if out of bounds (uses ecx to return)
-	push ecx
+headReady:
+	; this is responsible for checking bounds and seeing wall position for the end of the game
 	call checkBounds
 	cmp ecx, 0
-	pop ecx
-	jl endwhile
+	jl gameOver
 
+	; for the snakes body movement 
+	mov al, snakeCols[1]
+	mov snakeCols[2], al
+	mov al, snakeRows[1]
+	mov snakeRows[2], al
 
-	; write the string eyes
-	mov al, eyes
-	call WriteChar
+	mov al, snakeCols[0]
+	mov snakeCols[1], al
+	mov al, snakeRows[0]
+	mov snakeRows[1], al
 
-	; save current snake position
+	; write new head
+	mov snakeCols[0], dl
+	mov snakeRows[0], dh
 	mov snakePOS, dx
-	call debug
 
-jmp go
-endwhile:
+	; kind of redundant but added in a self collision clause if we decide to make the snake bigger
+	call checkSelfCollision
+	cmp ecx, 0
+	jl gameOver
+
+	; this will update the screen
+	call eraseTail
+	call drawSnake
+
+	; used when the snake collides with an apple 
+	mov al, snakeCols[0]
+	cmp al, appleCol
+	jne continueGame
+	mov al, snakeRows[0]
+	cmp al, appleRow
+	jne continueGame
+
+	inc applesEaten
+
+	; half the time delay but it is capped below at 60 ms
+	mov eax, timeDelay
+	shr eax, 1
+	cmp eax, 60
+	jae saveDelay
+	mov eax, 60
+
+saveDelay:
+	mov timeDelay, eax
+	call spawnApple
+
+continueGame:
+	jmp gameLoop
+
+gameOver:
+	mov dl, 0
+	mov dh, 29
+	call GotoXY
+	mov edx, OFFSET deathMsg
+	call WriteString
 	ret
 moveSnake ENDP
 
