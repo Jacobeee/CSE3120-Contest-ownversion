@@ -20,11 +20,13 @@ INCLUDE Irvine32.inc
 	appleRow BYTE 0
 	tailCol BYTE 0
 	TailRow BYTE 0
-	deathMsg BYTE "GAME OVER -- Push 'r' to restart or 'q' to quit",0
+	deathMsg BYTE "GAME OVER -- Push 'r' to restart or any other button to quit",0
 	restart BYTE 0
 .code
 main PROC
 	
+rs:
+	mov restart, 0
 	; initialize the snake
 	call initSnake
 
@@ -41,6 +43,10 @@ main PROC
 	mov timeDelay, 1000		; initial time delay in milliseconds
 	call flushInput
 	call moveSnake
+
+	; check for restart
+	cmp restart, 1
+	je rs
 
 	; recommended next steps
 
@@ -384,7 +390,7 @@ gameOver:
 	call GotoXY
 	mov edx, OFFSET deathMsg
 	call WriteString
-	; check if user pushed r or q
+	; check if user pushed r or something else
 	call handleOption 
 	ret
 moveSnake ENDP
@@ -540,17 +546,21 @@ handleInput ENDP
 
 ; user input for restarting the game or quitting
 handleOption PROC
-	call readKey ; ch 5
+	call readChar ; ch 5
 	; if zero flag is zero
 	jz quit
 	; and AL is not zero
 	cmp al, 0
 	jz quit
 
-
+	; check key
+	; ascii of r = 114
+	cmp al, 114
+	jne quit
+	mov restart, 1
 quit:
 	ret
-handleInput ENDP
+handleOption ENDP
 
 breakout:
 END main
