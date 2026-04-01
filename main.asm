@@ -399,29 +399,55 @@ debug ENDP
 ; returns negative number in ecx if out of bounds
 ; bounds so the snake dies if it touches the wall
 checkBounds PROC
-.data
-deathMsg BYTE "You have died!", 0
-;BadXCoordMsg BYTE "X-Coordinate out of range!",0Dh,0Ah,0
-;BadYCoordMsg BYTE "Y-Coordinate out of range!",0Dh,0Ah,0
-.code
-	.IF (DL < 0) || (DL > 119)
-	   ;mov  edx,OFFSET BadXCoordMsg
-	   mov  edx,OFFSET deathMsg
-	   call WriteString
-	   mov ecx, -1
-	   jmp  quit
-	.ENDIF
-	.IF (DH < 0) || (DH > 28)
-	   ;mov  edx,OFFSET BadYCoordMsg
-	   mov  edx,OFFSET deathMsg
-	   call WriteString
-	   mov ecx, -1
-	   jmp  quit
-	.ENDIF
+; returns negative number in ecx if out of bounds
+; bounds so the snake dies if it touches the wall
+checkBounds PROC
+	; zero extend DL into ECX
+	movzx ecx, dl          
+	cmp ecx, 2
+	jl outOfBounds
+	cmp ecx, 118
+	jg outOfBounds
+	; zero extend DH into ECX
+	movzx ecx, dh          
+	cmp ecx, 2
+	jl outOfBounds
+	cmp ecx, 27
+	jg outOfBounds
+
 	mov ecx, 1
-quit:
+	ret
+
+outOfBounds:
+	mov ecx, -1
 	ret
 checkBounds ENDP
+
+checkSelfCollision PROC
+	mov ecx, 1
+
+	mov al, snakeCols[0]
+	cmp al, snakeCols[1]
+	jne checkTail
+	mov al, snakeRows[0]
+	cmp al, snakeRows[1]
+	je hitSelf
+
+checkTail:
+	mov al, snakeCols[0]
+	cmp al, snakeCols[2]
+	jne safe
+	mov al, snakeRows[0]
+	cmp al, snakeRows[2]
+	je hitSelf
+
+safe:
+	ret
+
+hitSelf:
+	mov ecx, -1
+	ret
+checkSelfCollision ENDP
 
 ; user input with WASD
 handleInput PROC
