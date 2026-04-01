@@ -76,40 +76,27 @@ flushInput ENDP
 
 initSnake PROC
 ; This procedure initializes the snake in the middle of the screen
-
-; Set text color to green on black background
+	; Set text color to green on black background
 	mov eax, green + (black*16)
 	call SetTextColor 
-
-	; clear the screen
+	; clears the screen
 	call Clrscr
-	; move cursor to row 15 col 60
-	mov dh, 15
-	mov dl, 60
-	call GotoXY
-	; write the string O
-	mov al, x
-	call WriteChar
+	; moves cursor to row 15,15,15 and col 60,61,62
+	mov snakeCols[0], 62
+	mov snakeRows[0], 15
+	mov snakeCols[1], 61
+	mov snakeRows[1], 15
+	mov snakeCols[2], 60
+	mov snakeRows[2], 15
 
-	; move cursor to row 15 col 61
-	mov dh, 15
-	mov dl, 61
-	call GotoXY
-	; write the string O
-	mov al, x
-	call WriteChar
-	; move cursor to row 15 col 62
-	mov dh, 15
-	mov dl, 62
-	call GotoXY
-	; write the string :
-	mov al, eyes
+	mov direction, 90
 
-	; this is where the eyes are, so now copy that to the snakePOS variable
+	mov dx, 0
+	mov dl, snakeCols[0]
+	mov dh, snakeRows[0]
 	mov snakePOS, dx
-	
-	call WriteChar
 
+	call drawSnake
 	ret
 initSnake ENDP
 
