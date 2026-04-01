@@ -399,9 +399,6 @@ debug ENDP
 ; returns negative number in ecx if out of bounds
 ; bounds so the snake dies if it touches the wall
 checkBounds PROC
-; returns negative number in ecx if out of bounds
-; bounds so the snake dies if it touches the wall
-checkBounds PROC
 	; zero extend DL into ECX
 	movzx ecx, dl          
 	cmp ecx, 2
