@@ -2,6 +2,10 @@
 
 ; this file is the main file of our snake game
 
+; GAMEPLAY INSTRUCTION
+; use W A S D to navigate the snake around the mao
+; if the game is over press r to start another game
+
 INCLUDE Irvine32.inc
 
 .data 
@@ -40,7 +44,7 @@ rs:
 	call Randomize
 	call spawnApple
 	; initialize the snake moving 1 pixel per second to the right
-	mov timeDelay, 1000		; initial time delay in milliseconds
+	mov timeDelay, 500		; initial time delay in milliseconds
 	call flushInput
 	call moveSnake
 
@@ -116,6 +120,7 @@ newApple:
 	mov eax, 117
 	call RandomRange
 	add eax, 2
+	and eax, 0FEh
 	mov appleCol, al
 
 	; bounds from rows 2 to 27
@@ -310,7 +315,7 @@ waitLoop:
 	mov ax, direction
 	cmp ax, 90
 	jne checkDown
-	inc dl
+	add dl, 2
 	jmp headReady
 
 checkDown:
@@ -322,7 +327,7 @@ checkDown:
 checkLeft:
 	cmp ax, 270
 	jne checkUp
-	dec dl
+	sub dl, 2
 	jmp headReady
 
 checkUp:
@@ -372,9 +377,9 @@ headReady:
 	; half the time delay but it is capped below at 60 ms
 	mov eax, timeDelay
 	shr eax, 1
-	cmp eax, 60
+	cmp eax, 20
 	jae saveDelay
-	mov eax, 60
+	mov eax, 20
 
 saveDelay:
 	mov timeDelay, eax
