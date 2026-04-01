@@ -20,7 +20,8 @@ INCLUDE Irvine32.inc
 	appleRow BYTE 0
 	tailCol BYTE 0
 	TailRow BYTE 0
-	deathMsg BYTE "GAME OVER",0
+	deathMsg BYTE "GAME OVER -- Push 'r' to restart or 'q' to quit",0
+	restart BYTE 0
 .code
 main PROC
 	
@@ -377,11 +378,14 @@ continueGame:
 	jmp gameLoop
 
 gameOver:
+	; print death message
 	mov dl, 0
 	mov dh, 29
 	call GotoXY
 	mov edx, OFFSET deathMsg
 	call WriteString
+	; check if user pushed r or q
+	call handleOption 
 	ret
 moveSnake ENDP
 
@@ -529,6 +533,20 @@ cv3:
 	cmp al, 97
 	jnz quit
 	mov direction, 270
+
+quit:
+	ret
+handleInput ENDP
+
+; user input for restarting the game or quitting
+handleOption PROC
+	call readKey ; ch 5
+	; if zero flag is zero
+	jz quit
+	; and AL is not zero
+	cmp al, 0
+	jz quit
+
 
 quit:
 	ret
